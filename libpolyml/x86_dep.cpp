@@ -1002,6 +1002,22 @@ void X86Dependent::SetMemRegisters(TaskData *taskData)
     // return.  This is also used if we have raised an exception.
     if (PSP_IC(taskData->stack) == PC_RETRY_SPECIAL)
         taskData->stack->p_pc = PSP_EDX(taskData->stack).AsObjPtr()->Get(0).AsCodePtr();
+    // Set the rounding mode to the value set within the RTS.
+
+    ((PolyX86Stack*)taskData->stack)->p_fp.cw &= 0x73ff;
+    // Get the rounding mode.
+    unsigned short controlWord = 0;
+#ifndef __GNUC__
+    __asm fnstcw controlWord;
+#else
+    __asm__ (
+        "fnstcw %0"
+        :"=m" (controlWord)
+    );
+#endif
+    ((PolyX86Stack*)taskData->stack)->p_fp.cw &= 0xf3ff;
+    ((PolyX86Stack*)taskData->stack)->p_fp.cw |= controlWord & 0xc00;
+
 }
 
 // This is called whenever we have returned from ML to C.
