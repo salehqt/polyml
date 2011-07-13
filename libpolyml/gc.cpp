@@ -1358,11 +1358,6 @@ GC_AGAIN:
     OpGCProcs(&checkRef);
     checkRef.ScanAreas();
 
-    if (convertedWeak)
-        // Notify the signal thread to broadcast on the condition var when
-        // the GC is complete.
-        processes->SignalArrived();
-    
     /* If we are doing a full GC we expand the immutable area now, so that there's
        enough room to copy the immutables that are currently in the mutable buffer.
        There's no point expanding the mutable buffer now - we'll do that later 
@@ -1963,6 +1958,11 @@ void FullGC(TaskData *taskData)
 {
     FullGCRequest request;
     processes->MakeRootRequest(taskData, &request);
+
+    if (convertedWeak)
+        // Notify the signal thread to broadcast on the condition var when
+        // the GC is complete.
+        processes->SignalArrived();
 }
 
 // This is the normal call when memory is exhausted and we need to garbage collect.
@@ -1970,6 +1970,10 @@ bool QuickGC(TaskData *taskData, POLYUNSIGNED wordsRequiredToAllocate)
 {
     QuickGCRequest request(wordsRequiredToAllocate);
     processes->MakeRootRequest(taskData, &request);
+
+    if (convertedWeak)
+        processes->SignalArrived();
+
     return request.result;
 }
 
