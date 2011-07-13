@@ -1,5 +1,5 @@
 (*
-    Copyright (c) 2007-10 David C.J. Matthews
+    Copyright (c) 2007-11 David C.J. Matthews
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
 
 structure CompilerVersion =
 struct
-   val compilerVersion = "5.4 Release"
-   val versionNumber = 540
+   val compilerVersion = "5.4.1 Release"
+   val versionNumber = 541
    val versionSuffix = Int.toString versionNumber
 end;
