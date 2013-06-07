@@ -136,7 +136,6 @@ private:
     static MTGCProcessMarkPointers *markStacks;
 protected:
     static unsigned nThreads, nInUse;
-private:
     static PLock stackLock;
 };
 
@@ -641,7 +640,10 @@ bool RescanMarked::RunRescan()
             ScanAddressesInRegion(start, end);
         }
     }
-    nInUse--;
+    {
+        PLocker lock(&stackLock);
+        nInUse--;
+    }
     gpTaskFarm->WaitForCompletion();
     return rescan;
 }
