@@ -1,0 +1,14 @@
+; Exports file for DLL
+
+LIBRARY      "Foreign"
+DESCRIPTION  'ForeignTest Dynamic Link Library'
+
+EXPORTS
+	DupNString
+	SumTree
+	ReturnR2
+	MakeCallback
+	MakeCallback2
+	MakeCallback3
+	AllocateIt
+	FreeIt
