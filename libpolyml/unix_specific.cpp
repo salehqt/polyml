@@ -1256,7 +1256,7 @@ TryAgain:
     int callFlags = get_C_long(taskData, DEREFHANDLE(args)->Get(2));
     int flags = callFlags | WNOHANG; // Add in WNOHANG so we never block.
     pid_t pres = 0;
-    int status;
+    int status = 0;
     switch (kind)
     {
     case 0: /* Wait for any child. */
@@ -1292,7 +1292,7 @@ TryAgain:
     {
         Handle result, pidHandle, resHandle;
         pidHandle = Make_arbitrary_precision(taskData, pres);
-        resHandle = Make_arbitrary_precision(taskData, status);
+        resHandle = Make_arbitrary_precision(taskData, pres == 0 ? 0: status);
 
         result = ALLOC(2);
         DEREFHANDLE(result)->Set(0, DEREFWORDHANDLE(pidHandle));
