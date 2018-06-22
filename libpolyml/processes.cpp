@@ -926,8 +926,6 @@ void Processes::ThreadExit(TaskData *taskData)
     pthread_setspecific(tlsId, 0);
 #endif
 
-    globalStats.decCount(PSC_THREADS);
-
     if (singleThreaded) finish(0);
 
     schedLock.Lock();
