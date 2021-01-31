@@ -560,7 +560,7 @@ local
             (* Each character typed is fed into the compiler but leading
                blank lines result in the prompt remaining as firstPrompt until
                significant characters are typed. *)
-            fun readin () : char option =
+            fun readin_textio () : char option =
             let
                 val () =
                     if isInteractive andalso !lastWasEol (* Start of line *)
@@ -580,8 +580,39 @@ local
                            else ();
                            SOME ch
                        )
-            end; (* readin *)
-    
+            end; (* readin_textio *)
+
+            (* readin but using readline, since we are supposet to return a single character
+               every time, we have to cache the output of readline *)
+            local
+                (* part of the string that we have to feed to ML *)
+                val unparsed : char list ref = ref nil;
+                (* keep track of multiple lines that make an expression *)
+                val completeExp : string ref = ref "";
+                open Foreign;
+                val rd = Foreign.loadLibrary "libreadline.so"; 
+                val readline = buildCall1 (getSymbol rd "readline", cString , cOptionPtr cString);
+                val add_history = buildCall1 (getSymbol rd "add_history", cString , cVoid);
+            in
+                fun readin_readline () : char option = 
+                    case !unparsed 
+                    of nil => (
+                        if !realDataRead then () else add_history (!completeExp);
+                        (* cache is empty read another line of input using readline *)
+                        case readline (if !realDataRead then !prompt2 else !prompt1)
+                        of NONE => (endOfFile := true; NONE)
+                        | SOME line => (
+                            if !realDataRead then completeExp := !completeExp ^ "\n" ^ line
+                            else completeExp := line; 
+                            unparsed := explode line; 
+                            SOME #"\n"
+                        )
+                    ) (* return the next character from the cache *)
+                    | c::rest => (unparsed := rest; realDataRead := true; SOME c)
+            end (* readin_readline *);
+
+            val readin = if isInteractive then (print "Readline enabled\n"; readin_readline) else readin_textio;
+
             (* Remove all buffered but unread input. *)
             fun flushInput () =
                 case TextIO.canInput(TextIO.stdIn, 1) of
